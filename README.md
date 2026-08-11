@@ -1,6 +1,6 @@
-# NAME TBD
+# SiblingGWAS
 
-Use information from genotyped dizygotic siblings to assess the robustness of GWAS analyses, by estimating within-family (WF) and between-family (BF) effects of genetic variants on continuous traits. This work is derived from [SiblingGWAS](https://github.com/LaurenceHowe/SiblingGWAS).
+Use information from genotyped dizygotic siblings to assess the robustness of GWAS analyses, by estimating within-family (WF) and between-family (BF) effects of genetic variants on continuous traits. This work is derived from [https://github.com/LaurenceHowe/SiblingGWAS](https://github.com/LaurenceHowe/SiblingGWAS).
 
 ## Use
 
@@ -16,7 +16,7 @@ Needed as input:
 
 ### Rscript
 
-You can run things using the Rscripts (`within-family.R` and `within-family-plots.R`) provided:
+You can run things using the R scripts (`within-family.R` and `within-family-plots.R`) provided:
 
 ```
 ❯ Rscript within-family.R -h
@@ -58,13 +58,13 @@ The plots look like:
 
 ### Docker
 
-The scripts above can also be run using the Docker image created from the `Dockerfile` in this repository.
+The scripts above can also be run using the Docker image created from the `Dockerfile` in this repository, e.g.
 
 ```
 docker build --platform linux/x86_64 --no-cache -t mrcieu/within-family .
 ```
 
-The Rscripts above are available as `within-family` and `within-family-plots`:
+The Rscripts above are available in the `$PATH` as `within-family` and `within-family-plots` (don't include the `.R` extension):
 
 ```
 ❯ docker run mrcieu/within-family:latest within-family -h
