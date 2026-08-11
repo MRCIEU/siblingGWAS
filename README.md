@@ -61,15 +61,15 @@ The plots look like:
 The scripts above can also be run using the Docker image created from the `Dockerfile` in this repository, e.g.
 
 ```
-docker build --platform linux/x86_64 --no-cache -t mrcieu/within-family .
+docker build --platform linux/x86_64 --no-cache -t mrcieu/siblingGWAS .
 ```
 
 The Rscripts above are available in the `$PATH` as `within-family` and `within-family-plots` (don't include the `.R` extension):
 
 ```
-❯ docker run mrcieu/within-family:latest within-family -h
+❯ docker run mrcieu/siblingGWAS:latest within-family -h
 Usage: within-family <raw file> <bim file> <phenotype file> <covariate file> <sibling file> <output prefix>
 
-❯ docker run mrcieu/within-family:latest within-family-plots -h
+❯ docker run mrcieu/siblingGWAS:latest within-family-plots -h
 Usage: within-family-plots <input file> <phenotype name>
 ```
