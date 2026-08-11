@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # The code below is modified from: https://github.com/LaurenceHowe/SiblingGWAS/ 
 # which is distributed under licence:
 #

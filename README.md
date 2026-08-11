@@ -16,7 +16,7 @@ Needed as input:
 
 ### Rscript
 
-You can run things using the Rscripts (`within-family.R` and `within-family-plots.R`) provided, given the existence of the appropriate input files:
+You can run things using the Rscripts (`within-family.R` and `within-family-plots.R`) provided:
 
 ```
 ❯ Rscript within-family.R -h
@@ -37,7 +37,7 @@ where:
 
 * `<output prefix>` - A string that will be prefixed to the output file according to: `paste0(outprefix, "_within-family-table.tsv")`
 
-Which will generate `*_within-family-table.tsv`, which you can in turn feed to `within-family-plots.R`:
+This will generate `*_within-family-table.tsv`, which you can in turn feed to `within-family-plots.R`:
 
 ```
 ❯ Rscript within-family-plots.R -h
@@ -50,7 +50,7 @@ where:
 
 * `<phenotype name>` - A string that will be prefixed to the output file according to: `paste0(phenname, "_pop_vs_family_beta.pdf")`
 
-And which produces, e.g.:
+The plots look like:
 
 <p align="left">
   <img src=".github/plot.png" alt="" width="738">
@@ -64,7 +64,7 @@ The scripts above can also be run using the Docker image created from the `Docke
 docker build --platform linux/x86_64 --no-cache -t mrcieu/within-family .
 ```
 
-The commands needed are `within-family` and `within-family-plots`:
+The Rscripts above are available as `within-family` and `within-family-plots`:
 
 ```
 ❯ docker run mrcieu/within-family:latest within-family -h

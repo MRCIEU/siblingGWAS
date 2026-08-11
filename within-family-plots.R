@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 
 USAGESTRING <- "Usage: within-family-plots.R <input file> <phenotype name>"
 
