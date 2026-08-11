@@ -6,7 +6,7 @@ Use information from genotyped dizygotic siblings to assess the robustness of GW
 
 Needed as input:
 
-* Genotype data for the entire dataset, consisting of a plink `raw` file of genotypes + a plink `bim` file of variant information
+* Genotype data for all samples, consisting of a plink `raw` file of genotypes + a plink `bim` file of variant information (we input LD-clumped, significantly associated variants only)
 
 * A value-separated file containing information for a single phenotype, one row for each sample in the entire dataset
 
