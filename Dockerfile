@@ -4,6 +4,7 @@ RUN Rscript -e 'install.packages( \
         c( \
             "data.table", \
             "lmtest", \
+            "optparse", \
             "sandwich", \
             "R.utils" \
         ), \
