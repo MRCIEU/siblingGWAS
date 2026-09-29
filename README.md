@@ -8,11 +8,11 @@ Needed as input:
 
 * Genotype data for all samples, consisting of a plink `raw` file of genotypes + a plink `bim` file of variant information (we input LD-clumped, significantly associated variants only)
 
-* A value-separated file containing information for a single phenotype, one row for each sample in the entire dataset
+* A delimeter-separated file containing information for a single phenotype, one row for each sample in the entire dataset
 
-* A value-separated file with covariate information, one row for each sample in the entire dataset
+* A delimeter-separated file with covariate information, one row for each sample in the entire dataset
 
-* A value-separated file of sibling relationships, with one column consisting of sample IDs, and one column consisting of family IDs which define sibling relationships. One row for each sibling in the dataset
+* A delimeter-separated file of sibling relationships, with one column consisting of sample IDs, and one column consisting of family IDs which define sibling relationships. One row for each sibling in the dataset
 
 There is an optional `--no-se` flag, which will force scripts to not calculate standard errors or p-values for the estimated effects, which will significantly speed up the calculations.
 
