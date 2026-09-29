@@ -16,6 +16,6 @@ jobs:
     - name: Docker build
       run: docker build -t mrcieu/siblinggwas .
     - name: Docker run
-      run: >
+      run: |
         docker run mrcieu/siblinggwas within-family -h
         docker run mrcieu/siblinggwas within-family-plots -h
