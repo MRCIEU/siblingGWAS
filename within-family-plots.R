@@ -1,58 +1,89 @@
 #!/usr/bin/env Rscript
 
-USAGESTRING <- "Usage: within-family-plots.R <input file> <phenotype name>"
+VERSIONSTRING <- "0.2.0"
 
-arguments <- commandArgs(trailingOnly = T)
-
-for(argument in arguments) {
-  if(argument == "-h" || argument == "--help") {
-    cat(USAGESTRING)
-    quit(save = "no", status = 0)
-  }
-}
-
-if(length(arguments) != 2) {
-  cat("Error: Wrong number of arguments provided.\n")
-  cat(USAGESTRING)
-  quit(save = "no", status = 1)
-}
-
+library(optparse, quietly = TRUE, warn.conflicts = FALSE)
 library(data.table, quietly = TRUE, warn.conflicts = FALSE)
 
-ifile <- arguments[1]
-phenname <- arguments[2]
+parser <- OptionParser(
+  formatter = IndentedHelpFormatter,
+  description = "",
+  usage = "Usage: within-family-plots.R --table <input file> --out <output prefix>"
+)
+
+parser <- add_option(
+  parser, c("-v", "--version"), help = "Print version", action = "callback",
+  callback = function(option, flag, value, parser) {
+    cat(paste("siblingGWAS version: ", VERSIONSTRING, "\n"), sep = "")
+    quit(save = "no", status = 0)
+  }
+)
+
+parser <- add_option(parser, "--table", help = "The output of within-family.R", type = "character", required = T)
+parser <- add_option(parser, "--out", help = "A string that will be prefixed to the output file according to: paste0(<output prefix>, \"_pop_vs_family_beta.pdf\")", type = "character", required = T)
+
+args <- parse_args(parser)
+
+ifile <- args$table
+phenname <- args$out
+
+expected_full <- c("CHR", "SNP", "BP", "A1", "A2", "N_REG", "BETA_MODEL1_0", "BETA_MODEL2_0", "BETA_TOTAL", "BETA_BF", "BETA_WF", "SE_BETA_MODEL1_0", "SE_BETA_MODEL2_0", "SE_BETA_TOTAL", "SE_BETA_BF", "SE_BETA_WF", "P_BETA_MODEL1_0", "P_BETA_MODEL2_0", "P_BETA_TOTAL", "P_BETA_BF", "P_BETA_WF", "VCV_MODEL1_0", "VCV_MODEL1_0_TOTAL", "VCV_MODEL1_TOTAL", "VCV_MODEL2_0", "VCV_MODEL2_0_BF", "VCV_MODEL2_0_WF", "VCV_MODEL2_BF", "VCV_MODEL2_BF_WF", "VCV_MODEL2_WF")
+expected_sub <- c("CHR", "SNP", "BP", "A1", "A2", "N_REG", "BETA_MODEL1_0", "BETA_MODEL2_0", "BETA_TOTAL", "BETA_BF", "BETA_WF")
 
 df <- fread(ifile)
 
-###
+if(all(expected_full %in% colnames(df))){
+  no_se <- FALSE
+} else if(all(expected_sub %in% colnames(df))){
+  no_se <- TRUE
+} else {
+  cat("Expected column names not found\n")
+  quit(save = "no", status = 1)
+}
 
-df_abs <- subset(df, select = c(
-  BETA_TOTAL,
-  SE_BETA_TOTAL,
-  BETA_BF,
-  SE_BETA_BF,
-  BETA_WF,
-  SE_BETA_WF
-))
-
-for(i in 1:nrow(df_abs)) {
-  if(df_abs[i, "BETA_TOTAL"] < 0) {
-    df_abs[i, "BETA_TOTAL"] <- df_abs[i, "BETA_TOTAL"] * -1
-    df_abs[i, "BETA_BF"] <- df_abs[i, "BETA_BF"] * -1
-    df_abs[i, "BETA_WF"] <- df_abs[i, "BETA_WF"] * -1
+for(i in 1:nrow(df)) {
+  if(df[i, "BETA_TOTAL"] < 0) {
+    df[i, "BETA_TOTAL"] <- df[i, "BETA_TOTAL"] * -1
+    df[i, "BETA_BF"] <- df[i, "BETA_BF"] * -1
+    df[i, "BETA_WF"] <- df[i, "BETA_WF"] * -1
   }
 }
 
 ###
 
-axis_limits <- range(
-  df_abs$BETA_TOTAL - df_abs$SE_BETA_TOTAL, 
-  df_abs$BETA_TOTAL + df_abs$SE_BETA_TOTAL, 
-  df_abs$BETA_BF - df_abs$SE_BETA_BF,
-  df_abs$BETA_BF + df_abs$SE_BETA_BF,
-  df_abs$BETA_WF - df_abs$SE_BETA_WF,
-  df_abs$BETA_WF + df_abs$SE_BETA_WF
-)
+if(no_se) {
+  df_abs <- subset(df, select = c(
+      BETA_TOTAL,
+      BETA_BF,
+      BETA_WF
+    )
+  )
+
+  axis_limits <- range(
+    df_abs$BETA_TOTAL,
+    df_abs$BETA_BF,
+    df_abs$BETA_WF
+  )
+
+} else {
+  df_abs <- subset(df, select = c(
+    BETA_TOTAL,
+    SE_BETA_TOTAL,
+    BETA_BF,
+    SE_BETA_BF,
+    BETA_WF,
+    SE_BETA_WF
+  ))
+
+  axis_limits <- range(
+    df_abs$BETA_TOTAL - df_abs$SE_BETA_TOTAL,
+    df_abs$BETA_TOTAL + df_abs$SE_BETA_TOTAL,
+    df_abs$BETA_BF - df_abs$SE_BETA_BF,
+    df_abs$BETA_BF + df_abs$SE_BETA_BF,
+    df_abs$BETA_WF - df_abs$SE_BETA_WF,
+    df_abs$BETA_WF + df_abs$SE_BETA_WF
+  )
+}
 
 ###
 
@@ -61,7 +92,7 @@ pdf(
   file = paste0(phenname, "_pop_vs_family_beta.pdf"),
   height = 7,
   width = 14
-  )
+)
 
 par(mfrow=c(1,2))
 
@@ -82,24 +113,26 @@ abline(
   col = "darkgrey",
   lty = "dashed"
 )
-arrows(
-  x0 = df_abs$BETA_TOTAL - df_abs$SE_BETA_TOTAL,
-  x1 = df_abs$BETA_TOTAL + df_abs$SE_BETA_TOTAL,
-  y0 = df_abs$BETA_BF,
-  length = 0.05,
-  angle = 90,
-  code = 3,
-  col = "gray"
-)
-arrows(
-  y0 = df_abs$BETA_BF - df_abs$SE_BETA_BF,
-  y1 = df_abs$BETA_BF + df_abs$SE_BETA_BF,
-  x0 = df_abs$BETA_TOTAL,
-  length = 0.05,
-  angle = 90,
-  code = 3,
-  col = "gray"
-)
+if(!no_se) {
+  arrows(
+    x0 = df_abs$BETA_TOTAL - df_abs$SE_BETA_TOTAL,
+    x1 = df_abs$BETA_TOTAL + df_abs$SE_BETA_TOTAL,
+    y0 = df_abs$BETA_BF,
+    length = 0.05,
+    angle = 90,
+    code = 3,
+    col = "gray"
+  )
+  arrows(
+    y0 = df_abs$BETA_BF - df_abs$SE_BETA_BF,
+    y1 = df_abs$BETA_BF + df_abs$SE_BETA_BF,
+    x0 = df_abs$BETA_TOTAL,
+    length = 0.05,
+    angle = 90,
+    code = 3,
+    col = "gray"
+  )
+}
 points(
   df_abs$BETA_TOTAL,
   df_abs$BETA_BF,
@@ -154,24 +187,26 @@ abline(
   col = "darkgrey",
   lty = "dashed"
 )
-arrows(
-  x0 = df_abs$BETA_TOTAL - df_abs$SE_BETA_TOTAL,
-  x1 = df_abs$BETA_TOTAL + df_abs$SE_BETA_TOTAL,
-  y0 = df_abs$BETA_WF,
-  length = 0.05,
-  angle = 90,
-  code = 3,
-  col = "gray"
-)
-arrows(
-  y0 = df_abs$BETA_WF - df_abs$SE_BETA_WF,
-  y1 = df_abs$BETA_WF + df_abs$SE_BETA_WF,
-  x0 = df_abs$BETA_TOTAL,
-  length = 0.05,
-  angle = 90,
-  code = 3,
-  col = "gray"
-)
+if(!no_se) {
+  arrows(
+    x0 = df_abs$BETA_TOTAL - df_abs$SE_BETA_TOTAL,
+    x1 = df_abs$BETA_TOTAL + df_abs$SE_BETA_TOTAL,
+    y0 = df_abs$BETA_WF,
+    length = 0.05,
+    angle = 90,
+    code = 3,
+    col = "gray"
+  )
+  arrows(
+    y0 = df_abs$BETA_WF - df_abs$SE_BETA_WF,
+    y1 = df_abs$BETA_WF + df_abs$SE_BETA_WF,
+    x0 = df_abs$BETA_TOTAL,
+    length = 0.05,
+    angle = 90,
+    code = 3,
+    col = "gray"
+  )
+}
 points(
   df_abs$BETA_TOTAL,
   df_abs$BETA_WF,
