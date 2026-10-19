@@ -52,6 +52,7 @@ pub fn write(path: &Path, title: &str, results: &[VariantResult], with_se: bool)
     // mtext(phenname, side = 3, line = -2, outer = TRUE, cex = 1.4, font = 2)
     dev.mtext(
         title,
+        3,
         &MtextOptions::default()
             .line(-2.0)
             .outer(true)
@@ -102,8 +103,7 @@ fn panel(dev: &mut Device<PdfBackend>, fx: &Effects, limits: (f64, f64), family:
     };
     let x = &fx.total;
     let ylab = format!("absolute {name} beta ± 1SE");
-    plot(
-        dev,
+    dev.plot(
         x,
         y,
         &PlotOptions::default()
@@ -146,10 +146,10 @@ fn panel(dev: &mut Device<PdfBackend>, fx: &Effects, limits: (f64, f64), family:
     dev.legend(
         LegendPos::Keyword(LegendKeyword::BottomRight),
         &[LegendEntry::point(label, red, '_' as i32)],
-        &LegendOptions::default().bty_box(false),
+        &LegendOptions::default().bty(LegendBty::None),
     );
     // mtext(name, side = 3, line = 0.5, cex = 1.1)
-    dev.mtext(name, &MtextOptions::default().line(0.5).cex(1.1));
+    dev.mtext(name, 3, &MtextOptions::default().line(0.5).cex(1.1));
 }
 
 /// Intercept and slope of `lm(y ~ x)` on the complete pairs. The slope is NaN when it is not
