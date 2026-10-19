@@ -1,0 +1,23 @@
+[package]
+name = "siblinggwas"
+version = "0.3.0"
+edition = "2021"
+description = "Within-family (WF) and between-family (BF) GWAS effect estimates with family-clustered standard errors"
+license = "GPL-3.0-or-later"
+authors = ["University of Bristol"]
+repository = "https://github.com/MRCIEU/siblingGWAS-rs"
+
+[[bin]]
+name = "siblinggwas"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+libm = "0.2"
+rayon = "1"
+rs-graphics = { git = "ssh://git@github.com/MRCIEU/rs-graphics.git", version = "0.1.0-pre" }
+
+[profile.release]
+lto = true
+codegen-units = 1
