@@ -50,15 +50,12 @@ pub fn write(path: &Path, title: &str, results: &[VariantResult], with_se: bool)
     dev.mfrow(1, 2);
     panel(&mut dev, &fx, limits, Family::Between);
     // mtext(phenname, side = 3, line = -2, outer = TRUE, cex = 1.4, font = 2)
-    dev.mtext(
-        title,
-        3,
-        &MtextOptions::default()
-            .line(-2.0)
-            .outer(true)
-            .cex(1.4)
-            .font(2),
-    );
+    dev.mtext(title, 3)
+        .line(-2.0)
+        .outer(true)
+        .cex(1.4)
+        .font(2)
+        .draw();
     panel(&mut dev, &fx, limits, Family::Within);
     std::fs::write(path, dev.into_backend().finish())
         .with_context(|| format!("cannot write {}", path.display()))
@@ -96,30 +93,26 @@ enum Family {
     Within,
 }
 
-fn panel(dev: &mut Device<PdfBackend>, fx: &Effects, limits: (f64, f64), family: Family) {
+fn panel<G: Graphics>(dev: &mut G, fx: &Effects, limits: (f64, f64), family: Family) {
     let (y, y_se, name) = match family {
         Family::Between => (&fx.bf, fx.se.as_ref().map(|s| &s[1]), "between-family"),
         Family::Within => (&fx.wf, fx.se.as_ref().map(|s| &s[2]), "within-family"),
     };
     let x = &fx.total;
     let ylab = format!("absolute {name} beta ± 1SE");
-    dev.plot(
-        x,
-        y,
-        &PlotOptions::default()
-            .type_(PlotType::None)
-            .xlim(limits.0, limits.1)
-            .ylim(limits.0, limits.1)
-            .xlab("absolute population beta ± 1SE")
-            .ylab(ylab),
-    );
+    dev.plot(x, y)
+        .type_(PlotType::None)
+        .xlim(limits.0, limits.1)
+        .ylim(limits.0, limits.1)
+        .xlab("absolute population beta ± 1SE")
+        .ylab(ylab)
+        .draw();
     // abline(0, 1, col = "darkgrey", lty = "dashed")
-    dev.abline(
-        &AblineOptions::default()
-            .coef(0.0, 1.0)
-            .col("darkgrey")
-            .lty(LineType::DASHED),
-    );
+    dev.abline()
+        .coef(0.0, 1.0)
+        .col("darkgrey")
+        .lty(LineType::DASHED)
+        .draw();
 
     if let (Some(x_se), Some(y_se)) = (fx.se.as_ref().map(|s| &s[0]), y_se) {
         let gray = ArrowsOptions::default()
@@ -130,26 +123,31 @@ fn panel(dev: &mut Device<PdfBackend>, fx: &Effects, limits: (f64, f64), family:
         let lo = |v: &[f64], s: &[f64]| v.iter().zip(s).map(|(v, s)| v - s).collect::<Vec<_>>();
         let hi = |v: &[f64], s: &[f64]| v.iter().zip(s).map(|(v, s)| v + s).collect::<Vec<_>>();
         // arrows(x0, x1, y0, length = 0.05, angle = 90, code = 3, col = "gray"), horizontal then vertical
-        dev.arrows(&lo(x, x_se), y, &hi(x, x_se), y, &gray);
-        dev.arrows(x, &lo(y, y_se), x, &hi(y, y_se), &gray);
+        dev.arrows(&lo(x, x_se), y, &hi(x, x_se), y)
+            .with(&gray)
+            .draw();
+        dev.arrows(x, &lo(y, y_se), x, &hi(y, y_se))
+            .with(&gray)
+            .draw();
     }
     // points(x, y, pch = 21, bg = "white")
-    dev.points(x, y, &XyOptions::default().pch(21).col(1).bg("white"));
+    dev.points(x, y).pch(21).col(1).bg("white").draw();
 
     let red = ColorSpec::from("red");
     let (intercept, slope) = simple_lm(x, y);
     if intercept.is_finite() && slope.is_finite() {
-        dev.abline(&AblineOptions::default().coef(intercept, slope).col(red));
+        dev.abline().coef(intercept, slope).col(red).draw();
     }
     // paste("slope: ", round(slope, 2))
     let label = format!("slope:  {}", format_round2(slope));
     dev.legend(
         LegendPos::Keyword(LegendKeyword::BottomRight),
         &[LegendEntry::point(label, red, '_' as i32)],
-        &LegendOptions::default().bty(LegendBty::None),
-    );
+    )
+    .bty(LegendBty::None)
+    .draw();
     // mtext(name, side = 3, line = 0.5, cex = 1.1)
-    dev.mtext(name, 3, &MtextOptions::default().line(0.5).cex(1.1));
+    dev.mtext(name, 3).line(0.5).cex(1.1).draw();
 }
 
 /// Intercept and slope of `lm(y ~ x)` on the complete pairs. The slope is NaN when it is not
