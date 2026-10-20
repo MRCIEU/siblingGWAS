@@ -47,7 +47,7 @@ pub fn write(path: &Path, title: &str, results: &[VariantResult], with_se: bool)
 
     let limits = axis_limits(&fx)?;
     let mut dev = Device::new(PdfBackend::new(14.0, 7.0), Par::default());
-    dev.mfrow(1, 2);
+    dev.par().mfrow(1, 2).draw();
     panel(&mut dev, &fx, limits, Family::Between);
     // mtext(phenname, side = 3, line = -2, outer = TRUE, cex = 1.4, font = 2)
     dev.mtext(title, 3)
