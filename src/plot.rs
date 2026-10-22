@@ -50,7 +50,9 @@ pub fn write(path: &Path, title: &str, results: &[VariantResult], with_se: bool)
     dev.par().mfrow(1, 2).draw();
     panel(&mut dev, &fx, limits, Family::Between);
     // mtext(phenname, side = 3, line = -2, outer = TRUE, cex = 1.4, font = 2)
-    dev.mtext(title, 3)
+    dev.mtext()
+        .text(title)
+        .side(3)
         .line(-2.0)
         .outer(true)
         .cex(1.4)
@@ -100,7 +102,9 @@ fn panel<G: Graphics>(dev: &mut G, fx: &Effects, limits: (f64, f64), family: Fam
     };
     let x = &fx.total;
     let ylab = format!("absolute {name} beta ± 1SE");
-    dev.plot(x, y)
+    dev.plot()
+        .x(x)
+        .y(y)
         .type_(PlotType::None)
         .xlim(limits.0, limits.1)
         .ylim(limits.0, limits.1)
@@ -109,7 +113,8 @@ fn panel<G: Graphics>(dev: &mut G, fx: &Effects, limits: (f64, f64), family: Fam
         .draw();
     // abline(0, 1, col = "darkgrey", lty = "dashed")
     dev.abline()
-        .coef(0.0, 1.0)
+        .a(0.0)
+        .b(1.0)
         .col("darkgrey")
         .lty(LineType::DASHED)
         .draw();
@@ -123,31 +128,40 @@ fn panel<G: Graphics>(dev: &mut G, fx: &Effects, limits: (f64, f64), family: Fam
         let lo = |v: &[f64], s: &[f64]| v.iter().zip(s).map(|(v, s)| v - s).collect::<Vec<_>>();
         let hi = |v: &[f64], s: &[f64]| v.iter().zip(s).map(|(v, s)| v + s).collect::<Vec<_>>();
         // arrows(x0, x1, y0, length = 0.05, angle = 90, code = 3, col = "gray"), horizontal then vertical
-        dev.arrows(&lo(x, x_se), y, &hi(x, x_se), y)
+        dev.arrows()
+            .x0(&lo(x, x_se))
+            .y0(y)
+            .x1(&hi(x, x_se))
+            .y1(y)
             .with(&gray)
             .draw();
-        dev.arrows(x, &lo(y, y_se), x, &hi(y, y_se))
+        dev.arrows()
+            .x0(x)
+            .y0(&lo(y, y_se))
+            .x1(x)
+            .y1(&hi(y, y_se))
             .with(&gray)
             .draw();
     }
     // points(x, y, pch = 21, bg = "white")
-    dev.points(x, y).pch(21).col(1).bg("white").draw();
+    dev.points().x(x).y(y).pch(21).col(1).bg("white").draw();
 
     let red = ColorSpec::from("red");
     let (intercept, slope) = simple_lm(x, y);
     if intercept.is_finite() && slope.is_finite() {
-        dev.abline().coef(intercept, slope).col(red).draw();
+        dev.abline().a(intercept).b(slope).col(red).draw();
     }
     // paste("slope: ", round(slope, 2))
     let label = format!("slope:  {}", format_round2(slope));
-    dev.legend(
-        LegendPos::Keyword(LegendKeyword::BottomRight),
-        &[LegendEntry::point(label, red, '_' as i32)],
-    )
-    .bty(LegendBty::None)
-    .draw();
+    dev.legend()
+        .pos(LegendPos::Keyword(LegendKeyword::BottomRight))
+        .labels(label)
+        .col(red)
+        .pch('_')
+        .bty(LegendBty::None)
+        .draw();
     // mtext(name, side = 3, line = 0.5, cex = 1.1)
-    dev.mtext(name, 3).line(0.5).cex(1.1).draw();
+    dev.mtext().text(name).side(3).line(0.5).cex(1.1).draw();
 }
 
 /// Intercept and slope of `lm(y ~ x)` on the complete pairs. The slope is NaN when it is not
