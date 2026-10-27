@@ -146,7 +146,7 @@ fn panel<G: Graphics>(dev: &mut G, fx: &Effects, limits: (f64, f64), family: Fam
     // points(x, y, pch = 21, bg = "white")
     dev.points().x(x).y(y).pch(21).col(1).bg("white").draw();
 
-    let red = ColorSpec::from("red");
+    let red = ColorSpec::try_from("red").expect("a colour name");
     let (intercept, slope) = simple_lm(x, y);
     if intercept.is_finite() && slope.is_finite() {
         dev.abline().a(intercept).b(slope).col(red).draw();
