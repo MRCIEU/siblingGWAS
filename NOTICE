@@ -1,4 +1,4 @@
-siblingGWAS-rs is licensed under the GNU General Public License, version 3 or
+siblingGWAS is licensed under the GNU General Public License, version 3 or
 (at your option) any later version; see LICENSE. So is rs-graphics, which it
 uses to draw plots. rs-graphics is a modified version of parts of R
 (https://www.r-project.org); R's copyright notices are below.
@@ -17,7 +17,7 @@ under the following licences:
   - Unicode License v3
 
 Their copyright and licence notices are reproduced in full in the
-siblingGWAS-rs NOTICE file, as those licences require.
+siblingGWAS NOTICE file, as those licences require.
 
 --------------------------------------------------------------------------------
 R's graphics engine and graphics, grDevices, base and stats packages

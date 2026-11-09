@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Renders the --plot output of siblinggwas and, from the same results table, the plot made by
-# siblingGWAS's within-family-plots.R, with and without standard errors, as PDFs and as PNGs
+# validation/within-family-plots.R, with and without standard errors, as PDFs and as PNGs
 # (via Ghostscript) for side-by-side comparison.
 # Usage: compare_plots.sh <data dir from simulate.R ... clean> <path to within-family-plots.R> <output dir>
 set -euo pipefail

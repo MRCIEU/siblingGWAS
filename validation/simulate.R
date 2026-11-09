@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Simulates inputs for within-family.R / within-family (Rust) including edge-case variants.
+# Simulates inputs for within-family.R and siblinggwas (Rust), including edge-case variants.
 #
 # Usage: Rscript simulate.R <out dir> <n unrelated> <n sibling families> <n random variants> <n PCs> [scenario]
 #   scenario "standard" (default): numeric, logical and factor covariates with missing values
