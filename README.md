@@ -1,79 +1,50 @@
-# SiblingGWAS
+# siblingGWAS-rs
 
-Use information from genotyped dizygotic siblings to assess the robustness of GWAS analyses, by estimating within-family (WF) and between-family (BF) effects of genetic variants on continuous traits. This work is derived from [https://github.com/LaurenceHowe/SiblingGWAS](https://github.com/LaurenceHowe/SiblingGWAS).
+A fast Rust port of `within-family.R` and `within-family-plots.R` from [siblingGWAS](https://github.com/MRCIEU/siblingGWAS). It estimates population, between-family and within-family effects for each variant, with standard errors clustered on family, and doesn't need R.
 
-## Use
+It takes the same inputs and writes the same `<prefix>_within-family-table.tsv` as the R script, and agrees with it to within about 1e-11. With `--plot` it also draws the plot that `within-family-plots.R` makes.
 
-Needed as input:
+This is a work in progress, so the interface may change.
 
-* Genotype data for all samples, consisting of a plink `raw` file of genotypes + a plink `bim` file of variant information (we input LD-clumped, significantly associated variants only)
+## Installation
 
-* A delimeter-separated file containing information for a single phenotype, one row for each sample in the entire dataset
-
-* A delimeter-separated file with covariate information, one row for each sample in the entire dataset
-
-* A delimeter-separated file of sibling relationships, with one column consisting of sample IDs, and one column consisting of family IDs which define sibling relationships. One row for each sibling in the dataset
-
-There is an optional `--no-se` flag, which will force scripts to not calculate standard errors or p-values for the estimated effects, which will significantly speed up the calculations.
-
-### Rscript
-
-You can run things using the R scripts (`within-family.R` and `within-family-plots.R`) provided:
+With Cargo:
 
 ```
-❯ Rscript within-family.R -h
-Usage: within-family.R --raw <raw file> --bim <bim file> --phenotypes <phenotype file> --covariates <covariate file> --siblings <sibling file> --out <output prefix> [--no-se]
-...
+cargo install --git https://github.com/MRCIEU/siblingGWAS-rs
 ```
 
-If you provide the `--no-se` flag, the output table will contain fewer columns, but can still be parsed with `within-family-plots.R` to generate the plots (minus SEs).
-
-#### Arguments
-
-* `<raw file>` - The output of `plink2 --recode A` ("Sample-major additive (0/1/2) coding, suitable for loading from R...")
-
-* `<bim file>` - [A plink extended variant information file](https://plink.readthedocs.io/en/latest/plink_fmt/#bim)
-
-* `<phenotype file>` - A plain text (separated value) file consisting of EXACTLY three columns: `FID` `IID` `"phenotype"` where "phenotype" can be named sensibly
-
-* `<covariate file>` - A plain text (separated value) file consisting of AT LEAST three columns. First: `FID` `IID` + at least one column containing covariates: `<"covariate 1">` `<"covariate 2">` `...`, etc.
-
-* `<sibling file>` - A plain text (separated value) file containing sibling information with exactly two columns: `IID` `FID_FS` where `FID_FS` is a family identifier for dizygotic siblings (see [the original method](https://github.com/LaurenceHowe/SiblingGWAS/tree/master))
-
-* `<output prefix>` - A string that will be prefixed to the output file according to: `paste0(<output prefix>, "_within-family-table.tsv")`
-
-This will generate `<output prefix>_within-family-table.tsv`, which you can in turn feed to `within-family-plots.R`:
+Or clone this repository and build it:
 
 ```
-❯ Rscript within-family-plots.R -h
-Usage: within-family-plots.R --table <input file> --out <output prefix>
-...
+cargo build --release
+./target/release/siblinggwas --help
 ```
 
-where:
+The plot is drawn with [rs-graphics](https://github.com/MRCIEU/rs-graphics), which Cargo fetches over SSH, so you need access to that repository.
 
-* `<input file>` - The output of `within-family.R`
-
-* `<output prefix>` - A string that will be prefixed to the output file according to: `paste0(<output prefix>, "_pop_vs_family_beta.pdf")`
-
-The plots look like:
-
-<p align="left">
-  <img src=".github/plot.png" alt="" width="738">
-</p>
-
-### Docker
-
-The scripts above can also be run using the Docker image created from the `Dockerfile` in this repository, e.g.
+## Usage
 
 ```
-docker build --platform linux/x86_64 --no-cache -t mrcieu/siblinggwas .
+siblinggwas --raw <raw file> --bim <bim file> --phenotypes <phenotype file> \
+    --covariates <covariate file> --siblings <sibling file> --out <output prefix> \
+    [--no-se] [--plot] [--threads N]
 ```
 
-The Rscripts above are available in the `$PATH` as `within-family` and `within-family-plots` (don't include the `.R` extension):
+| Option | Description |
+| --- | --- |
+| `--raw` | Genotypes from `plink2 --recode A` |
+| `--bim` | The matching plink `.bim` file |
+| `--phenotypes` | FID, IID and phenotype |
+| `--covariates` | FID, IID and one or more covariates |
+| `--siblings` | IID and FID_FS, which identifies sibling families |
+| `--out` | Output prefix |
+| `--no-se` | Don't calculate standard errors and p-values |
+| `--plot` | Also write `<prefix>_pop_vs_family_beta.pdf` |
+| `--threads` | Number of threads (default: all cores) |
 
-```
-❯ docker run mrcieu/siblinggwas:latest within-family -h
+The arguments are the same as for `within-family.R`; see the [siblingGWAS README](https://github.com/MRCIEU/siblingGWAS) for details of the input files.
 
-❯ docker run mrcieu/siblinggwas:latest within-family-plots -h
-```
+## Licence
+
+GPL-3.0-or-later; see [LICENSE](LICENSE). Third-party notices are in [NOTICE](NOTICE). `siblinggwas -l` prints a summary and `siblinggwas --licences` the full text.
