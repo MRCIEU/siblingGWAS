@@ -5,7 +5,6 @@
 
 use crate::output::VariantResult;
 use anyhow::{bail, Context, Result};
-use rs_graphics::backend::pdf::PdfBackend;
 use rs_graphics::prelude::*;
 use std::path::Path;
 
@@ -46,8 +45,8 @@ pub fn write(path: &Path, title: &str, results: &[VariantResult], with_se: bool)
     }
 
     let limits = axis_limits(&fx)?;
-    let mut dev = Device::new(PdfBackend::new(14.0, 7.0), Par::default());
-    dev.par().mfrow(1, 2).draw();
+    let mut dev = Device::memory("pdf").width(14).height(7).open()?;
+    dev.par().mfrow([1, 2]).draw();
     panel(&mut dev, &fx, limits, Family::Between);
     // mtext(phenname, side = 3, line = -2, outer = TRUE, cex = 1.4, font = 2)
     dev.mtext()
@@ -59,7 +58,7 @@ pub fn write(path: &Path, title: &str, results: &[VariantResult], with_se: bool)
         .font(2)
         .draw();
     panel(&mut dev, &fx, limits, Family::Within);
-    std::fs::write(path, dev.into_backend().finish())
+    std::fs::write(path, dev.finish())
         .with_context(|| format!("cannot write {}", path.display()))
 }
 
@@ -106,8 +105,8 @@ fn panel<G: Graphics>(dev: &mut G, fx: &Effects, limits: (f64, f64), family: Fam
         .x(x)
         .y(y)
         .type_(PlotType::None)
-        .xlim(limits.0, limits.1)
-        .ylim(limits.0, limits.1)
+        .xlim(limits)
+        .ylim(limits)
         .xlab("absolute population beta ± 1SE")
         .ylab(ylab)
         .draw();
@@ -158,7 +157,7 @@ fn panel<G: Graphics>(dev: &mut G, fx: &Effects, limits: (f64, f64), family: Fam
         .labels(label)
         .col(red)
         .pch('_')
-        .bty(LegendBty::None)
+        .bty(Bty::N)
         .draw();
     // mtext(name, side = 3, line = 0.5, cex = 1.1)
     dev.mtext().text(name).side(3).line(0.5).cex(1.1).draw();
